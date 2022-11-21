@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: erg43hergeg <mikolaj744@protonmail.com>
+Date: Mon, 21 Nov 2022 21:36:11 +0100
+Subject: [PATCH] test
+
+
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 57dd2f5190e00bddbc575044ce5d9cc613e3c0df..20e0ad370f014d4a01f5c4773f10f9059fe3fcc2 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -7,6 +7,7 @@ import com.mojang.brigadier.StringReader;
+ import com.mojang.brigadier.exceptions.CommandSyntaxException;
+ import com.mojang.datafixers.util.Pair;
+ import com.mojang.logging.LogUtils;
++import inoshi.inventory.PlayerPostInventoryClickEvent;
+ import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
+ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+@@ -3197,7 +3198,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+                     InventoryView inventory = this.player.containerMenu.getBukkitView();
+                     SlotType type = inventory.getSlotType(packet.getSlotNum());
+ 
+-                    InventoryClickEvent event;
++                    InventoryClickEvent event = null;
+                     ClickType click = ClickType.UNKNOWN;
+                     InventoryAction action = InventoryAction.UNKNOWN;
+ 
+@@ -3483,6 +3484,17 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+                         this.player.containerMenu.broadcastChanges();
+                     }
+ 
++                    if (event != null) {
++                        PlayerPostInventoryClickEvent postEvent;
++
++                        if (click == ClickType.NUMBER_KEY) {
++                            postEvent = new PlayerPostInventoryClickEvent(inventory, type, packet.getSlotNum(), click, action, packet.getButtonNum());
++                        } else {
++                            postEvent = new PlayerPostInventoryClickEvent(inventory, type, packet.getSlotNum(), click, action);
++                        }
++
++                        this.cserver.getPluginManager().callEvent(postEvent);
++                    }
+                 }
+             }
+         }
+diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+index 40c5275a2c39f576c350154413256c5ebe49df5e..48d4cc10ed62ed0b413a3771ce9472dcf9d09129 100644
+--- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
++++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
+ import com.google.common.collect.Sets;
+ import com.google.common.collect.Table;
+ import com.mojang.logging.LogUtils;
++import inoshi.inventory.PlayerPostInventoryDragEvent;
+ import it.unimi.dsi.fastutil.ints.IntArrayList;
+ import it.unimi.dsi.fastutil.ints.IntList;
+ import java.util.Iterator;
+@@ -499,6 +500,9 @@ public abstract class AbstractContainerMenu {
+                         this.sendAllDataToRemote();
+                     }
+                     // CraftBukkit end
++
++                    PlayerPostInventoryDragEvent postEvent = new PlayerPostInventoryDragEvent(view, (newcursor.getType() != org.bukkit.Material.AIR ? newcursor : null), CraftItemStack.asBukkitCopy(oldCursor), this.quickcraftType == 1, eventmap);
++                    player.level.getCraftServer().getPluginManager().callEvent(postEvent);
+                 }
+ 
+                 this.resetQuickCraft();

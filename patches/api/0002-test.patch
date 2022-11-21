@@ -1,0 +1,230 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: erg43hergeg <mikolaj744@protonmail.com>
+Date: Mon, 21 Nov 2022 21:36:18 +0100
+Subject: [PATCH] test
+
+
+diff --git a/src/main/java/inoshi/inventory/PlayerPostInventoryClickEvent.java b/src/main/java/inoshi/inventory/PlayerPostInventoryClickEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..314d230d8bb3f08782985975dfc2bfd3343c8301
+--- /dev/null
++++ b/src/main/java/inoshi/inventory/PlayerPostInventoryClickEvent.java
+@@ -0,0 +1,125 @@
++package inoshi.inventory;
++
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.inventory.ClickType;
++import org.bukkit.event.inventory.InventoryAction;
++import org.bukkit.event.inventory.InventoryEvent;
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class PlayerPostInventoryClickEvent extends InventoryEvent {
++
++    private static final HandlerList handlers = new HandlerList();
++    private final ClickType click;
++    private final InventoryAction action;
++    private final InventoryType.SlotType slot_type;
++    private final int whichSlot;
++    private final int rawSlot;
++    private ItemStack current = null;
++    private int hotbarKey = -1;
++
++    public PlayerPostInventoryClickEvent(@NotNull InventoryView view, @NotNull InventoryType.SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action) {
++        super(view);
++        this.slot_type = type;
++        this.rawSlot = slot;
++        this.whichSlot = view.convertSlot(slot);
++        this.click = click;
++        this.action = action;
++    }
++
++    public PlayerPostInventoryClickEvent(@NotNull InventoryView view, @NotNull InventoryType.SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action, int key) {
++        this(view, type, slot, click, action);
++        this.hotbarKey = key;
++    }
++
++    @NotNull
++    public HumanEntity getWhoClicked() {
++        return getView().getPlayer();
++    }
++
++    @NotNull
++    public InventoryType.SlotType getSlotType() {
++        return slot_type;
++    }
++
++    @Nullable
++    public ItemStack getCursor() {
++        return getView().getCursor();
++    }
++
++    @Nullable
++    public ItemStack getCurrentItem() {
++        if (slot_type == InventoryType.SlotType.OUTSIDE) {
++            return current;
++        }
++        return getView().getItem(rawSlot);
++    }
++
++    public boolean isRightClick() {
++        return click.isRightClick();
++    }
++
++    public boolean isLeftClick() {
++        return click.isLeftClick();
++    }
++
++    public boolean isShiftClick() {
++        return click.isShiftClick();
++    }
++
++    @Deprecated
++    public void setCursor(@Nullable ItemStack stack) {
++        getView().setCursor(stack);
++    }
++
++    public void setCurrentItem(@Nullable ItemStack stack) {
++        if (slot_type == InventoryType.SlotType.OUTSIDE) {
++            current = stack;
++        } else {
++            getView().setItem(rawSlot, stack);
++        }
++    }
++
++    @Nullable
++    public Inventory getClickedInventory() {
++        return getView().getInventory(rawSlot);
++    }
++
++    public int getSlot() {
++        return whichSlot;
++    }
++
++    public int getRawSlot() {
++        return rawSlot;
++    }
++
++    public int getHotbarButton() {
++        return hotbarKey;
++    }
++
++    @NotNull
++    public InventoryAction getAction() {
++        return action;
++    }
++
++    @NotNull
++    public ClickType getClick() {
++        return click;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
+diff --git a/src/main/java/inoshi/inventory/PlayerPostInventoryDragEvent.java b/src/main/java/inoshi/inventory/PlayerPostInventoryDragEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d0cd9873bf18807f8441de1b034fa7d3ec7c14b4
+--- /dev/null
++++ b/src/main/java/inoshi/inventory/PlayerPostInventoryDragEvent.java
+@@ -0,0 +1,87 @@
++package inoshi.inventory;
++
++import com.google.common.base.Preconditions;
++import com.google.common.collect.ImmutableSet;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.inventory.DragType;
++import org.bukkit.event.inventory.InventoryEvent;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.Collections;
++import java.util.Map;
++import java.util.Set;
++
++public class PlayerPostInventoryDragEvent extends InventoryEvent {
++
++    private static final HandlerList handlers = new HandlerList();
++    private final DragType type;
++    private final Map<Integer, ItemStack> addedItems;
++    private final Set<Integer> containerSlots;
++    private final ItemStack oldCursor;
++    private ItemStack newCursor;
++
++    public PlayerPostInventoryDragEvent(@NotNull InventoryView what, @Nullable ItemStack newCursor, @NotNull ItemStack oldCursor, boolean right, @NotNull Map<Integer, ItemStack> slots) {
++        super(what);
++
++        Preconditions.checkArgument(oldCursor != null);
++        Preconditions.checkArgument(slots != null);
++
++        type = right ? DragType.SINGLE : DragType.EVEN;
++        this.newCursor = newCursor;
++        this.oldCursor = oldCursor;
++        this.addedItems = slots;
++        ImmutableSet.Builder<Integer> b = ImmutableSet.builder();
++        for (Integer slot : slots.keySet()) {
++            b.add(what.convertSlot(slot));
++        }
++        this.containerSlots = b.build();
++    }
++
++    @NotNull
++    public Map<Integer, ItemStack> getNewItems() {
++        return Collections.unmodifiableMap(addedItems);
++    }
++
++    @NotNull
++    public Set<Integer> getRawSlots() {
++        return addedItems.keySet();
++    }
++
++    @NotNull
++    public Set<Integer> getInventorySlots() {
++        return containerSlots;
++    }
++
++    @Nullable
++    public ItemStack getCursor() {
++        return newCursor;
++    }
++
++    public void setCursor(@Nullable ItemStack newCursor) {
++        this.newCursor = newCursor;
++    }
++
++    @NotNull
++    public ItemStack getOldCursor() {
++        return oldCursor.clone();
++    }
++
++    @NotNull
++    public DragType getType() {
++        return type;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
