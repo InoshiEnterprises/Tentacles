@@ -5,7 +5,7 @@ Subject: [PATCH] test
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 57dd2f5190e00bddbc575044ce5d9cc613e3c0df..20e0ad370f014d4a01f5c4773f10f9059fe3fcc2 100644
+index ba08b9f454b6dc40a363a125ae29f47db34ee59f..376e0d9d9faf10c24597b86039680b1d518327a9 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -7,6 +7,7 @@ import com.mojang.brigadier.StringReader;
@@ -44,7 +44,7 @@ index 57dd2f5190e00bddbc575044ce5d9cc613e3c0df..20e0ad370f014d4a01f5c4773f10f905
              }
          }
 diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 40c5275a2c39f576c350154413256c5ebe49df5e..48d4cc10ed62ed0b413a3771ce9472dcf9d09129 100644
+index 40bb5056d49a4309860fb6ddd45ec945747188bb..daea9369e6f9048e2f23adb9deceb14b18e50e54 100644
 --- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
@@ -55,7 +55,7 @@ index 40c5275a2c39f576c350154413256c5ebe49df5e..48d4cc10ed62ed0b413a3771ce9472dc
  import it.unimi.dsi.fastutil.ints.IntArrayList;
  import it.unimi.dsi.fastutil.ints.IntList;
  import java.util.Iterator;
-@@ -499,6 +500,9 @@ public abstract class AbstractContainerMenu {
+@@ -500,6 +501,9 @@ public abstract class AbstractContainerMenu {
                          this.sendAllDataToRemote();
                      }
                      // CraftBukkit end
